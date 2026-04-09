@@ -51,7 +51,7 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Email должен содержать символ @")
+    @DisplayName("Email должен содержать @")
     void shouldFailWhenEmailWithoutAt() {
         User user = new User();
         user.setEmail("wrong.email");
@@ -93,7 +93,7 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Имя пользователя может быть пустым (будет заменено на логин)")
+    @DisplayName("Имя может быть пустым")
     void shouldAllowNameToBeBlank() {
         User user = new User();
         user.setEmail("user@example.com");
@@ -106,7 +106,7 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Дата рождения не может быть в будущем")
+    @DisplayName("Дата рождения не в будущем")
     void shouldFailWhenBirthdayInFuture() {
         User user = new User();
         user.setEmail("user@example.com");
@@ -120,7 +120,7 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Дата рождения не может быть null")
+    @DisplayName("Дата рождения не null")
     void shouldFailWhenBirthdayIsNull() {
         User user = new User();
         user.setEmail("user@example.com");

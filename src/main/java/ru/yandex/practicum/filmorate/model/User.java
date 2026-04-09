@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
-
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 
@@ -17,7 +16,7 @@ public class User {
     @Pattern(regexp = "\\S+", message = "Логин не должен содержать пробелы")
     private String login;
 
-    private String name; // может быть пустым, тогда используем login
+    private String name;
 
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     @NotNull(message = "Дата рождения не может быть пустой")

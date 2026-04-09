@@ -26,7 +26,6 @@ public class UserController {
     public User createUser(@Valid @RequestBody User user) {
         log.info("Создание пользователя: {}", user);
         validateUser(user);
-        // Если имя пустое, используем логин
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
