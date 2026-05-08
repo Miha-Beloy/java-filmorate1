@@ -37,7 +37,7 @@ class FilmTest {
     }
 
     @Test
-    @DisplayName("Название фильма не может быть пустым")
+    @DisplayName("Название не может быть пустым")
     void shouldFailWhenNameIsBlank() {
         Film film = new Film();
         film.setName("");
@@ -51,7 +51,7 @@ class FilmTest {
     }
 
     @Test
-    @DisplayName("Описание фильма не должно превышать 200 символов")
+    @DisplayName("Описание не длиннее 200 символов")
     void shouldFailWhenDescriptionTooLong() {
         Film film = new Film();
         film.setName("Film");
@@ -65,7 +65,7 @@ class FilmTest {
     }
 
     @Test
-    @DisplayName("Дата релиза не может быть null")
+    @DisplayName("Дата релиза не null")
     void shouldFailWhenReleaseDateIsNull() {
         Film film = new Film();
         film.setName("Film");
@@ -79,7 +79,7 @@ class FilmTest {
     }
 
     @Test
-    @DisplayName("Продолжительность фильма должна быть положительным числом")
+    @DisplayName("Продолжительность положительная")
     void shouldFailWhenDurationIsZeroOrNegative() {
         Film film = new Film();
         film.setName("Film");

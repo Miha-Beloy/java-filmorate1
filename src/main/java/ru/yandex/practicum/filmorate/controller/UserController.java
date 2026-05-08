@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -26,7 +27,6 @@ public class UserController {
     public User createUser(@Valid @RequestBody User user) {
         log.info("Создание пользователя: {}", user);
         validateUser(user);
-        // Если имя пустое, используем логин
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -45,7 +45,7 @@ public class UserController {
         }
         if (!users.containsKey(user.getId())) {
             log.error("Пользователь с id={} не найден", user.getId());
-            throw new ValidationException("Пользователь с таким ID не существует");
+            throw new NotFoundException("Пользователь с таким ID не существует");
         }
         validateUser(user);
         if (user.getName() == null || user.getName().isBlank()) {
