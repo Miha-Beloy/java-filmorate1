@@ -3,12 +3,14 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -16,9 +18,14 @@ import java.util.List;
 public class FilmService {
     private final FilmStorage filmStorage;
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+    private final Map<Integer, Set<Integer>> likes = new HashMap<>();
 
     public List<Film> getAllFilms() {
         return filmStorage.getAll();
+    }
+
+    public Film getFilmById(int id) {
+        return filmStorage.getById(id);
     }
 
     public Film addFilm(Film film) {
@@ -33,7 +40,7 @@ public class FilmService {
             throw new ValidationException("ID должен быть указан для обновления");
         }
         if (!filmStorage.existsById(film.getId())) {
-            throw new ValidationException("Фильм с id=" + film.getId() + " не существует");
+            throw new NotFoundException("Фильм с id=" + film.getId() + " не существует");
         }
         validateFilm(film);
         Film updated = filmStorage.update(film);
@@ -41,11 +48,39 @@ public class FilmService {
         return updated;
     }
 
+    public void addLike(int filmId, int userId) {
+        filmStorage.getById(filmId);
+        likes.computeIfAbsent(filmId, k -> new HashSet<>()).add(userId);
+        log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
+    }
+
+    public void removeLike(int filmId, int userId) {
+        if (!filmStorage.existsById(filmId)) {
+            throw new NotFoundException("Фильм с id=" + filmId + " не найден");
+        }
+        Set<Integer> filmLikes = likes.get(filmId);
+        if (filmLikes == null || !filmLikes.contains(userId)) {
+            throw new NotFoundException("Лайк от пользователя " + userId + " не найден");
+        }
+        filmLikes.remove(userId);
+        log.info("Пользователь {} удалил лайк у фильма {}", userId, filmId);
+    }
+
+    public List<Film> getPopularFilms(int count) {
+        if (count <= 0) count = 10;
+        return filmStorage.getAll().stream()
+                .sorted((f1, f2) -> {
+                    int likes1 = likes.getOrDefault(f1.getId(), Set.of()).size();
+                    int likes2 = likes.getOrDefault(f2.getId(), Set.of()).size();
+                    return Integer.compare(likes2, likes1);
+                })
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
     private void validateFilm(Film film) {
         if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
-            log.warn("Дата релиза {} раньше 28.12.1895", film.getReleaseDate());
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
-        // остальная валидация через @Valid в контроллере
     }
 }
