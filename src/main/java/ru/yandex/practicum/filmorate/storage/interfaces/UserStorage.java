@@ -5,8 +5,12 @@ import java.util.List;
 
 public interface UserStorage {
     List<User> getAll();
+
     User create(User user);
+
     User update(User user);
+
     User getById(int id);
+
     boolean existsById(int id);
 }
