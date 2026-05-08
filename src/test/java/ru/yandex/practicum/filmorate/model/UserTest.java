@@ -75,7 +75,10 @@ class UserTest {
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
-        assertEquals("Логин не может быть пустым", violations.iterator().next().getMessage());
+        // Ищем violation с сообщением о пустом логине
+        boolean hasNotBlankMessage = violations.stream()
+                .anyMatch(v -> v.getMessage().equals("Логин не может быть пустым"));
+        assertTrue(hasNotBlankMessage, "Должно быть сообщение о пустом логине");
     }
 
     @Test
@@ -89,7 +92,10 @@ class UserTest {
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
-        assertEquals("Логин не должен содержать пробелы", violations.iterator().next().getMessage());
+        // Ищем violation с сообщением о пробелах
+        boolean hasPatternMessage = violations.stream()
+                .anyMatch(v -> v.getMessage().equals("Логин не должен содержать пробелы"));
+        assertTrue(hasPatternMessage, "Должно быть сообщение о пробелах в логине");
     }
 
     @Test
