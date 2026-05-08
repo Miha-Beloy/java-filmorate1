@@ -9,16 +9,16 @@ public class User {
     private int id;
 
     @NotBlank(message = "Email не может быть пустым")
-    @Email(message = "Email должен содержать символ @ и быть корректным")
+    @Email(message = "Email должен содержать символ @")
     private String email;
 
     @NotBlank(message = "Логин не может быть пустым")
     @Pattern(regexp = "\\S+", message = "Логин не должен содержать пробелы")
     private String login;
 
-    private String name;
+    private String name;  // может быть null или пустым
 
-    @PastOrPresent(message = "Дата рождения не может быть в будущем")
     @NotNull(message = "Дата рождения не может быть пустой")
+    @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 }
