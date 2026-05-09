@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Integer, User> users = new HashMap<>();
+    private final Map<Integer, Set<Integer>> friends = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
 
     @Override
@@ -43,5 +44,23 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public boolean existsById(int id) {
         return users.containsKey(id);
+    }
+
+    @Override
+    public void addFriend(int userId, int friendId) {
+        friends.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
+    }
+
+    @Override
+    public void removeFriend(int userId, int friendId) {
+        Set<Integer> userFriends = friends.get(userId);
+        if (userFriends != null) {
+            userFriends.remove(friendId);
+        }
+    }
+
+    @Override
+    public Set<Integer> getFriends(int userId) {
+        return friends.getOrDefault(userId, Collections.emptySet());
     }
 }

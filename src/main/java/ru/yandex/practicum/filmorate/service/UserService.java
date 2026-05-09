@@ -9,7 +9,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -17,7 +18,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
-    private final Map<Integer, Set<Integer>> friends = new HashMap<>();
 
     public List<User> getAllUsers() {
         return userStorage.getAll();
@@ -55,24 +55,22 @@ public class UserService {
         }
         checkUserExists(userId);
         checkUserExists(friendId);
-        friends.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
-        friends.computeIfAbsent(friendId, k -> new HashSet<>()).add(userId);
+        userStorage.addFriend(userId, friendId);
+        userStorage.addFriend(friendId, userId);
         log.info("Пользователи {} и {} стали друзьями", userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
         checkUserExists(userId);
         checkUserExists(friendId);
-        Set<Integer> userFriends = friends.get(userId);
-        Set<Integer> friendFriends = friends.get(friendId);
-        if (userFriends != null) userFriends.remove(friendId);
-        if (friendFriends != null) friendFriends.remove(friendId);
+        userStorage.removeFriend(userId, friendId);
+        userStorage.removeFriend(friendId, userId);
         log.info("Пользователи {} и {} больше не друзья", userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
         checkUserExists(userId);
-        Set<Integer> friendIds = friends.getOrDefault(userId, Collections.emptySet());
+        Set<Integer> friendIds = userStorage.getFriends(userId);
         return friendIds.stream()
                 .map(userStorage::getById)
                 .collect(Collectors.toList());
@@ -81,10 +79,11 @@ public class UserService {
     public List<User> getCommonFriends(int userId, int otherId) {
         checkUserExists(userId);
         checkUserExists(otherId);
-        Set<Integer> userFriends = friends.getOrDefault(userId, Collections.emptySet());
-        Set<Integer> otherFriends = friends.getOrDefault(otherId, Collections.emptySet());
-        Set<Integer> common = new HashSet<>(userFriends);
-        common.retainAll(otherFriends);
+        Set<Integer> userFriends = userStorage.getFriends(userId);
+        Set<Integer> otherFriends = userStorage.getFriends(otherId);
+        Set<Integer> common = userFriends.stream()
+                .filter(otherFriends::contains)
+                .collect(Collectors.toSet());
         return common.stream()
                 .map(userStorage::getById)
                 .collect(Collectors.toList());

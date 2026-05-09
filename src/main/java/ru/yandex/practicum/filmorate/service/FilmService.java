@@ -9,7 +9,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -18,7 +19,6 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final FilmStorage filmStorage;
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-    private final Map<Integer, Set<Integer>> likes = new HashMap<>();
 
     public List<Film> getAllFilms() {
         return filmStorage.getAll();
@@ -49,8 +49,8 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        filmStorage.getById(filmId);
-        likes.computeIfAbsent(filmId, k -> new HashSet<>()).add(userId);
+        filmStorage.getById(filmId); // проверяем существование фильма
+        filmStorage.addLike(filmId, userId);
         log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
     }
 
@@ -58,11 +58,11 @@ public class FilmService {
         if (!filmStorage.existsById(filmId)) {
             throw new NotFoundException("Фильм с id=" + filmId + " не найден");
         }
-        Set<Integer> filmLikes = likes.get(filmId);
-        if (filmLikes == null || !filmLikes.contains(userId)) {
+        Set<Integer> likes = filmStorage.getLikes(filmId);
+        if (!likes.contains(userId)) {
             throw new NotFoundException("Лайк от пользователя " + userId + " не найден");
         }
-        filmLikes.remove(userId);
+        filmStorage.removeLike(filmId, userId);
         log.info("Пользователь {} удалил лайк у фильма {}", userId, filmId);
     }
 
@@ -70,8 +70,8 @@ public class FilmService {
         if (count <= 0) count = 10;
         return filmStorage.getAll().stream()
                 .sorted((f1, f2) -> {
-                    int likes1 = likes.getOrDefault(f1.getId(), Set.of()).size();
-                    int likes2 = likes.getOrDefault(f2.getId(), Set.of()).size();
+                    int likes1 = filmStorage.getLikes(f1.getId()).size();
+                    int likes2 = filmStorage.getLikes(f2.getId()).size();
                     return Integer.compare(likes2, likes1);
                 })
                 .limit(count)
